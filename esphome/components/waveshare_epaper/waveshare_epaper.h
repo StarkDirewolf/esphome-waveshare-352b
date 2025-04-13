@@ -618,12 +618,12 @@ class WaveshareEPaper3P52InBWR : public WaveshareEPaperBWR {
     this->pwr_pin_->digital_write(true);
 
     this->reset_pin_->digital_write(true);
-    delay(2);
+    delay(reset_duration_ / 2);
     this->reset_pin_->digital_write(false);
     delay(2);
     this->reset_pin_->digital_write(true);
-    delay(2);
-
+    delay(reset_duration_ / 2);
+    
     this->pwr_pin_->digital_write(false);
   };
 };
