@@ -2670,57 +2670,85 @@ void WaveshareEPaper4P2InBV2::dump_config() {
 // The implementation is an adaptation of WaveshareEPaper4P2InBV2BWR class
 // ========================================================
 void WaveshareEPaper3P52InBWR::initialize() {
-  this->pwr_pin_->digital_write(true);
+  ESP_LOGI(TAG, "Initializing...");
   delay(2);
 
+  ESP_LOGI(TAG, "Powering on");
   // COMMAND POWER ON
   this->command(0x04);
   delay(2);
   this->wait_until_idle_();
 
+  ESP_LOGI(TAG, "Initialize command 1");
   // COMMAND PANEL SETTING
   this->command(0x00);
   this->data(0x03);
   this->data(0x0D);
   
+  ESP_LOGI(TAG, "Initialize command 2");
   this->command(0x61);
   this->data(0xF0);
   this->data(0x01);
   this->data(0x68);
 
+  ESP_LOGI(TAG, "Initialize command 3");
   this->command(0x06);
   this->data(0x2F);
   this->data(0x2F);
   this->data(0x2E);
 
   this->wait_until_idle_();
-  this->pwr_pin_->digital_write(false);
+
+  ESP_LOGI(TAG, "Initializing complete!");
 }
+
+bool awake = true;
 
 void HOT WaveshareEPaper3P52InBWR::display() {
   const uint32_t buf_len = this->get_buffer_length_() / 2u;
 
-  this->pwr_pin_->digital_write(true);
+  if (!awake) {
+    // WAKE
+    if (this->pwr_pin_ != nullptr) {
+      this->pwr_pin_->digital_write(true);
+    }
+
+    this->reset_();
+    this->initialize();
+  }
+
+  ESP_LOGI(TAG, "Displaying BW");
+
   this->command(0x10);  // Send BW data Transmission
   delay(2);             // Delay to prevent Watchdog error
   for (uint32_t i = 0; i < buf_len; ++i) {
     this->data(this->buffer_[i]);
   }
 
+  ESP_LOGI(TAG, "Display R");
   this->command(0x13);  // Send red data Transmission
   delay(2);             // Delay to prevent Watchdog error
   for (uint32_t i = 0; i < buf_len; ++i) {
     // Red color need to flip bit from the buffer. Otherwise, red will conqure the screen!
-    this->data(~this->buffer_[buf_len + i]);
+    this->data(this->buffer_[buf_len + i]);
   }
 
+  ESP_LOGI(TAG, "Refreshing...");
   // COMMAND DISPLAY REFRESH
   this->command(0x12);
   this->wait_until_idle_();
 
+  ESP_LOGI(TAG, "Refresh complete!");
   // COMMAND DEEP SLEEP
   this->deep_sleep();
-  this->pwr_pin_->digital_write(false);
+  
+  if (this->pwr_pin_ != nullptr) {
+    this->pwr_pin_->digital_write(false);
+  }
+
+  awake = false;
+
+  ESP_LOGI(TAG, "Display update complete!");
 }
 
 bool WaveshareEPaper3P52InBWR::wait_until_idle_() {
@@ -2728,20 +2756,16 @@ bool WaveshareEPaper3P52InBWR::wait_until_idle_() {
     return true;
   }
 
-  const uint32_t start = millis();
-  while (this->busy_pin_->digital_read()) {
-    if (millis() - start > this->idle_timeout_()) {
-      ESP_LOGI(TAG, "Timeout while waiting to not be busy!");
-      return false;
-    }
+  while (!this->busy_pin_->digital_read()) {
     App.feed_wdt();
     delay(10);
   }
+
   return true;
 };
 
-int WaveshareEPaper3P52InBWR::get_width_internal() { return 360; }
-int WaveshareEPaper3P52InBWR::get_height_internal() { return 240; }
+int WaveshareEPaper3P52InBWR::get_width_internal() { return 240; }
+int WaveshareEPaper3P52InBWR::get_height_internal() { return 360; }
 void WaveshareEPaper3P52InBWR::dump_config() {
   LOG_DISPLAY("", "Waveshare E-Paper", this);
   ESP_LOGCONFIG(TAG, "  Model: 3.52in (B) BWR-Mode");

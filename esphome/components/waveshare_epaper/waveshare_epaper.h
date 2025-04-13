@@ -602,13 +602,9 @@ class WaveshareEPaper3P52InBWR : public WaveshareEPaperBWR {
   void dump_config() override;
 
   void deep_sleep() override {
-    this->pwr_pin_->digital_write(true);
-
     // COMMAND DEEP SLEEP
     this->command(0x07);
     this->data(0xA5);  // check code
-
-    this->pwr_pin_->digital_write(false);
   }
 
  protected:
@@ -617,16 +613,12 @@ class WaveshareEPaper3P52InBWR : public WaveshareEPaperBWR {
   int get_height_internal() override;
 
   void reset_() {
-    this->pwr_pin_->digital_write(true);
-
     this->reset_pin_->digital_write(true);
     delay(reset_duration_ / 2);
     this->reset_pin_->digital_write(false);
     delay(2);
     this->reset_pin_->digital_write(true);
     delay(reset_duration_ / 2);
-
-    this->pwr_pin_->digital_write(false);
   };
 };
 
