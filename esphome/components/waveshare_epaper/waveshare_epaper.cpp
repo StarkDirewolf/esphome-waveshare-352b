@@ -119,6 +119,10 @@ void WaveshareEPaperBase::setup() {
   this->initialize();
 }
 void WaveshareEPaperBase::setup_pins_() {
+  if (this->pwr_pin_ != nullptr) {
+    this->pwr_pin_->setup(); // OUTPUT
+    this->pwr_pin_->digital_write(true);
+  }
   this->dc_pin_->setup();  // OUTPUT
   this->dc_pin_->digital_write(false);
   if (this->reset_pin_ != nullptr) {
