@@ -593,6 +593,8 @@ class WaveshareEPaper4P2InBV2 : public WaveshareEPaper {
 
 class WaveshareEPaper3P52InBWR : public WaveshareEPaperBWR {
  public:
+  bool wait_until_idle_();
+
   void initialize() override;
 
   void display() override;
@@ -623,7 +625,7 @@ class WaveshareEPaper3P52InBWR : public WaveshareEPaperBWR {
     delay(2);
     this->reset_pin_->digital_write(true);
     delay(reset_duration_ / 2);
-    
+
     this->pwr_pin_->digital_write(false);
   };
 };

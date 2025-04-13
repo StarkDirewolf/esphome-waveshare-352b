@@ -2722,6 +2722,24 @@ void HOT WaveshareEPaper3P52InBWR::display() {
   this->deep_sleep();
   this->pwr_pin_->digital_write(false);
 }
+
+bool WaveshareEPaper3P52InBWR::wait_until_idle_() {
+  if (this->busy_pin_ == nullptr) {
+    return true;
+  }
+
+  const uint32_t start = millis();
+  while (this->busy_pin_->digital_read()) {
+    if (millis() - start > this->idle_timeout_()) {
+      ESP_LOGI(TAG, "Timeout while waiting to not be busy!");
+      return false;
+    }
+    App.feed_wdt();
+    delay(10);
+  }
+  return true;
+};
+
 int WaveshareEPaper3P52InBWR::get_width_internal() { return 360; }
 int WaveshareEPaper3P52InBWR::get_height_internal() { return 240; }
 void WaveshareEPaper3P52InBWR::dump_config() {
