@@ -12,8 +12,9 @@ from esphome.const import (
     CONF_PAGES,
     CONF_RESET_DURATION,
     CONF_RESET_PIN,
-    CONF_PWR_PIN,
 )
+
+CONF_PWR_PIN = "pwr_pin"
 
 DEPENDENCIES = ["spi"]
 
