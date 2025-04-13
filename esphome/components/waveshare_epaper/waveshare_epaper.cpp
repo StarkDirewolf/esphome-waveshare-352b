@@ -2671,16 +2671,11 @@ void WaveshareEPaper4P2InBV2::dump_config() {
 // ========================================================
 void WaveshareEPaper3P52InBWR::initialize() {
   this->pwr_pin_->digital_write(true);
-  this->reset_pin_->digital_write(true);
-  delay(200);
-  this->reset_pin_->digital_write(false);
   delay(2);
-  this->reset_pin_->digital_write(true);
-  delay(200);
 
   // COMMAND POWER ON
   this->command(0x04);
-  delay(200);
+  delay(2);
   this->wait_until_idle_();
 
   // COMMAND PANEL SETTING
