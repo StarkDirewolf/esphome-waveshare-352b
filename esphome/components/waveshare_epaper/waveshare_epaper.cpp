@@ -2666,6 +2666,7 @@ void WaveshareEPaper4P2InBV2::dump_config() {
 // The implementation is an adaptation of WaveshareEPaper4P2InBV2BWR class
 // ========================================================
 void WaveshareEPaper3P52InBWR::initialize() {
+  this->pwr_pin_->digital_write(true);
   this->reset_pin_->digital_write(true);
   delay(200);
   this->reset_pin_->digital_write(false);
@@ -2694,11 +2695,13 @@ void WaveshareEPaper3P52InBWR::initialize() {
   this->data(0x2E);
 
   this->wait_until_idle_();
+  this->pwr_pin_->digital_write(false);
 }
 
 void HOT WaveshareEPaper3P52InBWR::display() {
   const uint32_t buf_len = this->get_buffer_length_() / 2u;
 
+  this->pwr_pin_->digital_write(true);
   this->command(0x10);  // Send BW data Transmission
   delay(2);             // Delay to prevent Watchdog error
   for (uint32_t i = 0; i < buf_len; ++i) {
@@ -2718,6 +2721,7 @@ void HOT WaveshareEPaper3P52InBWR::display() {
 
   // COMMAND DEEP SLEEP
   this->deep_sleep();
+  this->pwr_pin_->digital_write(false);
 }
 int WaveshareEPaper3P52InBWR::get_width_internal() { return 360; }
 int WaveshareEPaper3P52InBWR::get_height_internal() { return 240; }
@@ -2727,6 +2731,7 @@ void WaveshareEPaper3P52InBWR::dump_config() {
   LOG_PIN("  Reset Pin: ", this->reset_pin_);
   LOG_PIN("  DC Pin: ", this->dc_pin_);
   LOG_PIN("  Busy Pin: ", this->busy_pin_);
+  LOG_PIN("  PWR Pin: ", this->pwr_pin_);
   LOG_UPDATE_INTERVAL(this);
 }
 

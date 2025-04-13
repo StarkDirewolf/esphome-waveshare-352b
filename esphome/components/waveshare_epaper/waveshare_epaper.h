@@ -15,6 +15,7 @@ class WaveshareEPaperBase : public display::DisplayBuffer,
   float get_setup_priority() const override;
   void set_reset_pin(GPIOPin *reset) { this->reset_pin_ = reset; }
   void set_busy_pin(GPIOPin *busy) { this->busy_pin_ = busy; }
+  void set_pwr_pin(GPIOPin *pwr) { this->pwr_pin_ = pwr; }
   void set_reset_duration(uint32_t reset_duration) { this->reset_duration_ = reset_duration; }
 
   void command(uint8_t value);
@@ -58,6 +59,7 @@ class WaveshareEPaperBase : public display::DisplayBuffer,
   GPIOPin *reset_pin_{nullptr};
   GPIOPin *dc_pin_;
   GPIOPin *busy_pin_{nullptr};
+  GPIOPin *pwr_pin_{nullptr};
   virtual uint32_t idle_timeout_() { return 1000u; }  // NOLINT(readability-identifier-naming)
 };
 
@@ -598,9 +600,13 @@ class WaveshareEPaper3P52InBWR : public WaveshareEPaperBWR {
   void dump_config() override;
 
   void deep_sleep() override {
+    this->pwr_pin_->digital_write(true);
+
     // COMMAND DEEP SLEEP
     this->command(0x07);
     this->data(0xA5);  // check code
+
+    this->pwr_pin_->digital_write(false);
   }
 
  protected:
@@ -609,12 +615,16 @@ class WaveshareEPaper3P52InBWR : public WaveshareEPaperBWR {
   int get_height_internal() override;
 
   void reset_() {
+    this->pwr_pin_->digital_write(true);
+
     this->reset_pin_->digital_write(true);
     delay(200);
     this->reset_pin_->digital_write(false);
     delay(2);
     this->reset_pin_->digital_write(true);
     delay(200);
+
+    this->pwr_pin_->digital_write(false);
   };
 };
 

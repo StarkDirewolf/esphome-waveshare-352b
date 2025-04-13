@@ -12,6 +12,7 @@ from esphome.const import (
     CONF_PAGES,
     CONF_RESET_DURATION,
     CONF_RESET_PIN,
+    CONF_PWR_PIN
 )
 
 DEPENDENCIES = ["spi"]
@@ -206,6 +207,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Required(CONF_MODEL): cv.one_of(*MODELS, lower=True),
             cv.Optional(CONF_RESET_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_BUSY_PIN): pins.gpio_input_pin_schema,
+            cv.Optional(CONF_PWR_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_FULL_UPDATE_EVERY): cv.int_range(min=1, max=4294967295),
             cv.Optional(CONF_RESET_DURATION): cv.All(
                 cv.positive_time_period_milliseconds,
@@ -253,6 +255,9 @@ async def to_code(config):
     if CONF_BUSY_PIN in config:
         reset = await cg.gpio_pin_expression(config[CONF_BUSY_PIN])
         cg.add(var.set_busy_pin(reset))
+    if CONF_PWR_PIN in config:
+        reset = await cg.gpio_pin_expression(config[CONF_PWR_PIN])
+        cg.add(var.set_pwr_pin(reset))
     if CONF_FULL_UPDATE_EVERY in config:
         cg.add(var.set_full_update_every(config[CONF_FULL_UPDATE_EVERY]))
     if CONF_RESET_DURATION in config:
